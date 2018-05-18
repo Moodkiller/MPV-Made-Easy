@@ -45,4 +45,11 @@ Hexchats latest version (2.14.1) doesn't have any built in "now playing" plugins
 # Screenshots
 ![alt text](https://i.imgur.com/GlXp12f.png "Open file window")
 
+![alt text](https://i.imgur.com/E0W622O.png "OSC overview, Thumbnail preview, seek bar, volume bar, window title")
+
+![alt text](https://i.imgur.com/nomUrXt.png "Seek to specified timestamp")
+
+![alt text](https://i.imgur.com/xB3cbkY.png "HexChat 2.14.x now playing plugin")
+
+
 Thanks goes to all those involved for testing and their inputs for getting stuff running. 
