@@ -8,6 +8,8 @@
      * Spacebar - Toggle pause.
      * Mouse right-click - Toggle pause.
      * Mouse side-buttons (if applicable) - Skip through chapter markers.
+     * Left/Right arrow keys - Seek ~10 seconds forward/backwards
+     * Up/Down arrow keys  & Mouse wheel - Increase/decrease volume by 5
      * Shift+S - Take screenshots (with subtitles).
      * Ctrl+o - Full-featured open file box.
      * Ctrl+g - Go to a specified timestamp. 
