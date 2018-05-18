@@ -3,14 +3,14 @@
 # Feature List:
 
 1. Similar feel and behaviour to MPC-HC (shortcut keys and mouse buttons) :
-    * a - Toggles audio track.
-  * s - Toggles subtitle track.
-  * Spacebar - Toggle pause.
-  * Mouse right-click - Toggle pause.
-  * Mouse side-buttons (if applicable) - Skip through chapter markers.
-  * Shift+S - Take screenshots (with subtitles).
-  * Ctrl+o - Full-featured open file box.
-  * Ctrl+g - Go to a specified timestamp. 
+     * a - Toggles audio track.
+     * s - Toggles subtitle track.
+     * Spacebar - Toggle pause.
+     * Mouse right-click - Toggle pause.
+     * Mouse side-buttons (if applicable) - Skip through chapter markers.
+     * Shift+S - Take screenshots (with subtitles).
+     * Ctrl+o - Full-featured open file box.
+     * Ctrl+g - Go to a specified timestamp. 
 2. Screen-shots are placed in the root videos directory under a new folder called "Screens".
 3. Seek bar thumbnail preview.
 4. Visualiser for audio tracks.
