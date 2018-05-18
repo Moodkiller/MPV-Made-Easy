@@ -43,6 +43,7 @@ Hexchats latest version (2.14.1) doesn't have any built in "now playing" plugins
 6. Type /mpv in any window while playing a file in MPV and it should spit out something like "Moodkiller is playing: [MK] Kiznaiver - 01 [BD 1080p][Hi10][Dual-Audio][05856FFC].mkv ◘ 1.945 GiB ◘ [00:04:05 / 00:24:03] in mpv 0.28.0-437-g9efb0278e7" (with colour formatting).
 
 # Screenshots
+## Open file window
 ![alt text](https://i.imgur.com/GlXp12f.png "Open file window")
 
 ![alt text](https://i.imgur.com/E0W622O.png "OSC overview, Thumbnail preview, seek bar, volume bar, window title")
