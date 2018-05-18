@@ -1,4 +1,4 @@
-# MPV-Made-Easy
+# MPV - Made Easy!
 
 # Feature List:
 
