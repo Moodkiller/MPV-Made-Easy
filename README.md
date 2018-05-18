@@ -13,15 +13,15 @@
      * Shift+S - Take screenshots (with subtitles).
      * Ctrl+o - Full-featured open file box.
      * Ctrl+g - Go to a specified timestamp. 
-2. Screen-shots are placed in the root videos directory under a new folder called "Screens".
-3. Seek bar thumbnail preview.
-4. Visualiser for audio tracks.
-5. Remember video position of previous played file (video/audio).
-6. Lightweight (no heavy filters or extra filters).
-7. Adjusted OSC (On Screen Controller) have a smaller footprint and be more practical.
-8. Play next sequential file in the current files folder.
-9. YouTube link player (drag and drop only)
-10. More as I remember them...
+* Screen-shots are placed in the root videos directory under a new folder called "Screens".
+* Seek bar thumbnail preview.
+* Visualiser for audio tracks.
+* Remember video position of previous played file (video/audio).
+* Lightweight (no heavy filters or extra filters).
+* Adjusted OSC (On Screen Controller) have a smaller footprint and be more practical.
+* Play next sequential file in the current files folder.
+* YouTube link player (drag and drop only)
+* More as I remember them...
 
 
 # Installation:
