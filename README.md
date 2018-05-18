@@ -38,7 +38,7 @@ Hexchats latest version (2.14.1) doesn't have any built in "now playing" plugins
 3. Paste the copied file into the 'addons' folder.
 4. In Hexchat go to Window > Plugins and Scripts > Load and browse to your addons folder where you pasted 'mpv_np.py'. Normally this is 'C:\Users\moodkiller\AppData\Roaming\HexChat\addons'
 5. You  should get confirmation to say the plugin has been loaded successfully.
-6. Type /mpv in any window while playing a file in MPV and it should spit out something like "*Moodkiller is playing: [MK] Kiznaiver - 01 [BD 1080p][Hi10][Dual-Audio][05856FFC].mkv ◘ 1.945 GiB ◘ [00:04:05 / 00:24:03] in mpv 0.28.0-437-g9efb0278e7" (with colour formatting). 
+6. Type /mpv in any window while playing a file in MPV and it should spit out something like "Moodkiller is playing: [MK] Kiznaiver - 01 [BD 1080p][Hi10][Dual-Audio][05856FFC].mkv ◘ 1.945 GiB ◘ [00:04:05 / 00:24:03] in mpv 0.28.0-437-g9efb0278e7" (with colour formatting).
 
 
 Thanks goes to all those involved for testing and their inputs for getting stuff running. 
