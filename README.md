@@ -2,7 +2,7 @@
 
 # Feature List:
 
-1. Similar feel and behaviour to MPC-HC (shortcut keys and mouse buttons) :
+* Similar feel and behaviour to MPC-HC (shortcut keys and mouse buttons) :
      * a - Toggles audio track.
      * s - Toggles subtitle track.
      * Spacebar - Toggle pause.
