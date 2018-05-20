@@ -28,8 +28,9 @@
 
 One of the nicest features of MPV is that it requires no installation and can be run from its own folder (portable).
 1. Clone or download this repo.
-2. Run updater.bat.
-3. Optional: Run installer/mpv-install.bat as administrator to set file associations.
+2. Unzip to your desired location.
+3. Run updater.bat.
+4. Optional: Run installer/mpv-install.bat as administrator to set file associations.
 
 
 # Hexchat Integration:
