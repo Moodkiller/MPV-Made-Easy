@@ -53,8 +53,8 @@ Hexchats latest version (2.14.1) doesn't have any built in "now playing" plugins
 ![alt text](https://i.imgur.com/xB3cbkY.png "HexChat 2.14.x now playing plugin")
 
 # Resources:
-   GUI build: https://sourceforge.net/projects/mpv-player-windows/files/
-   Collection of user scripts: https://github.com/mpv-player/mpv/wiki/User-Scripts
+   GUI build: https://sourceforge.net/projects/mpv-player-windows/files/  
+   Collection of user scripts: https://github.com/mpv-player/mpv/wiki/User-Scripts  
    MPV properties page: https://mpv.io/manual/master/#synopsis
 
 Thanks goes to all those involved for testing and their inputs for getting stuff running. 
