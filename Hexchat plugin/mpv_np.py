@@ -26,12 +26,15 @@ UNIX_PIPE_PATH = "/tmp/mpv-socket"  # variables are expanded
 # Supports mpv's property expansion:
 # https://mpv.io/manual/stable/#property-expansion
 CMD_FMT = R'me is playing: 07${filename} ◘ ${file-size} ◘ [${time-pos}${!duration==0: / ${duration}}] in 06${mpv-version}'
+#CMD_FMT = R'me is playing: ${media-title} [${time-pos}${!duration==0: / ${duration}}]'
+
 
 # On UNIX, the above is not supported yet
 # and this Python format string is used instead.
 # `{title}` will be replaced with the title.
-LEGACY_CMD_FMT = "me is playing: {title} in MPV"
-
+LEGACY_CMD_FMT = ""
+#LEGACY_CMD_FMT = "me is playing: {title} in MPV"
+#LEGACY_CMD_FMT = R'me is playing: 07${filename} ◘ ${file-size} ◘ [${time-pos}${!duration==0: / ${duration}}] in 06${mpv-version}'
 
 # # The Script # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -148,7 +151,7 @@ class WinMpvIpcClient(MpvIpcClient):
     def close(self):
         self._f.close()
 
-    def expand_properties(self, fmt, timeout=1.5):
+    def expand_properties(self, fmt, timeout=5):
         """Expand a mpv property string using its run command and other hacks.
 
         Notably, spawn a Powershell process that writes a string to some file.
@@ -231,13 +234,14 @@ class UnixMpvIpcClient(MpvIpcClient):
 def mpv_np(caller, callee, helper):
     try:
         with MpvIpcClient.for_platform() as mpv:
-            command = mpv.expand_properties(CMD_FMT)
+            command = mpv.expand_properties(CMD_FMT)			
             if command is None:
-                print("unable to expand property string - falling back to legacy")
+                print("unable to expand property string - Close and reopen current media file, or try again in ~5 minutes")
                 command = NotImplemented
             if command is NotImplemented:
-                title = mpv.command("get_property", "media-title")
+                title = mpv.command("get_property", "media-title")				
                 command = LEGACY_CMD_FMT.format(title=title)
+				#command = mpv.expand_properties(CMD_FMT)
             hexchat.command(command)
 
     except OSError:
