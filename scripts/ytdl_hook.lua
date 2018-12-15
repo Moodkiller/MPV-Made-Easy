@@ -457,10 +457,11 @@ mp.add_hook(o.try_ytdl_first and "on_load" or "on_load_fail", 10, function ()
     local raw_options = mp.get_property_native("options/ytdl-raw-options")
     local allsubs = true
     local proxy = nil
-    local use_playlist = false
+    local use_playlist = true
+	local audio_only = true
 
     local command = {
-        ytdl.path, "--no-warnings", "-J", "--flat-playlist",
+        ytdl.path, "--prefer-ffmpeg", "--audio-format best", "--audio-quality 0", "-J", "--flat-playlist",
         "--sub-format", "ass/srt/best"
     }
 
@@ -496,6 +497,11 @@ mp.add_hook(o.try_ytdl_first and "on_load" or "on_load_fail", 10, function ()
     if (allsubs == true) then
         table.insert(command, "--all-subs")
     end
+	
+    if (audio_only == true) then
+        table.insert(command, "--extract-audio")
+    end	
+	
     if not use_playlist then
         table.insert(command, "--no-playlist")
     end
