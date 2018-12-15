@@ -12,9 +12,9 @@
      * Up/Down arrow keys  & Mouse wheel - Increase/decrease volume by 5
      * Shift+S - Take screenshots (with subtitles).
      * Ctrl+o - Full-featured open file box.
-     * Ctrl+g - Go to a specified timestamp. 
+     * Ctrl+g - Go to a specified timestamp.
+     * Ctrl+p - Show current playlist and select an item to play. 
 * Screen-shots are placed in the root videos directory under a new folder called "Screens".
-* Seek bar thumbnail preview.
 * Visualiser for audio tracks.
 * Remember video position of previous played file (video/audio).
 * Lightweight (no heavy filters or extra filters).
