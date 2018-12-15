@@ -1,8 +1,10 @@
 7z/
 doc/
-installer/
+installer/*.bat
+installer/*.ico
 d3dcompiler_*.dll
 mpv.com
 mpv.exe
 mpv*.7z
 youtube-dl.exe
+log.txt
