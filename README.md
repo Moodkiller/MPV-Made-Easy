@@ -48,7 +48,7 @@ Hexchats latest version (2.14.1) doesn't have any built in "now playing" plugins
 # Screenshots
 ![alt text](https://i.imgur.com/GlXp12f.png "Open file window")
 
-![alt text]([img]https://i.imgur.com/MphDKcp.png "OSC overview, Thumbnail preview, seek bar, volume bar, window title")
+![alt text](https://i.imgur.com/MphDKcp.png "OSC overview, Thumbnail preview, seek bar, volume bar, window title")
 
 ![alt text](https://i.imgur.com/nomUrXt.png "Seek to specified timestamp")
 
