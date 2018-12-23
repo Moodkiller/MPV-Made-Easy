@@ -1,4 +1,6 @@
-﻿local settings = {
+﻿-- sourece: https://github.com/jonniek/mpv-playlistmanager
+
+local settings = {
 
   -- #### FUNCTIONALITY SETTINGS
 
