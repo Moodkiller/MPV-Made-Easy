@@ -10,7 +10,7 @@ import hexchat
 
 
 __module_name__ = "mpv now playing (MK Mod)"
-__module_version__ = "0.4.2"
+__module_version__ = "0.4.3"
 __module_description__ = "Announces info of the currently loaded 'file' in mpv"
 
 # # Configuration # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -25,10 +25,25 @@ UNIX_PIPE_PATH = "/tmp/mpv-socket"  # variables are expanded
 # The command that is being executed.
 # Supports mpv's property expansion:
 # https://mpv.io/manual/stable/#property-expansion
-CMD_FMT = R'me is playing: 07${filename} ◘ ${file-size} ◘ [${time-pos}${!duration==0: / ${duration}}] in 06${mpv-version}'
+# https://mpv.io/manual/master/#property-list
+
+# \x02 	bold
+# \x03 	colored text
+# \x1D 	italic text
+# \x1F 	underlined text
+# \x16 	swap background and foreground colors ("reverse video")
+# \x0F 	reset all formatting
+
+######## Set the format/properties for audio files ###############
+audioformats = ("flac", "acc", "mp3", "ac3", "m4a", "opus", "wav", "wma", "webm", "floatp")
+
+CMD_FMT_audio = R'me is listening to \x0307\x02${metadata/artist}\x0F - \x0307\x02${media-title}\x0F {${file-size} • ${file-format} ${audio-bitrate} ${audio-params/channel-count}ch} • [${time-pos}${!duration==0: / ${duration}}] playing in \x0306${mpv-version}\x0F'
+
+######## Set the format/properties for video files ###############
+CMD_FMT_video = R'me is playing: \x0307\x02${media-title}\x0F • ${file-size} • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F'
+
+
 #CMD_FMT = R'me is playing: ${media-title} [${time-pos}${!duration==0: / ${duration}}]'
-
-
 # On UNIX, the above is not supported yet
 # and this Python format string is used instead.
 # `{title}` will be replaced with the title.
@@ -230,25 +245,28 @@ class UnixMpvIpcClient(MpvIpcClient):
 
 ###############################################################################
 
+def mpv_np(caller, callee, helper): 
+		try:
+			with MpvIpcClient.for_platform() as mpv:
+				#if mpv.command("get_property", "filename") == '*.flac' or '*.acc' or '*.mp3' or '*.ac3' or '*.m4a' or '*.opus' or '*.wav' or '*.wma':
+				if mpv.command("get_property", "file-format") in audioformats:
+					#artist = mpv.command.get_metadata(data, {"artist", "ARTIST"})
+					command = mpv.expand_properties(CMD_FMT_audio)
+				else:
+					command = mpv.expand_properties(CMD_FMT_video)
+				if command is None:
+					print("unable to expand property string - falling back to legacy")
+					command = NotImplemented
+				if command is NotImplemented:
+					title = mpv.command("get_property", "media-title")
+					command = LEGACY_CMD_FMT.format(title=title)
+				hexchat.command(command)
 
-def mpv_np(caller, callee, helper):
-    try:
-        with MpvIpcClient.for_platform() as mpv:
-            command = mpv.expand_properties(CMD_FMT)			
-            if command is None:
-                print("unable to expand property string - Close and reopen current media file, or try again in ~5 minutes")
-                command = NotImplemented
-            if command is NotImplemented:
-                title = mpv.command("get_property", "media-title")				
-                command = LEGACY_CMD_FMT.format(title=title)
-				#command = mpv.expand_properties(CMD_FMT)
-            hexchat.command(command)
+		except OSError:
+			# import traceback; traceback.print_exc()
+			print("mpv IPC not running or bad configuration (see /help mpv)")
 
-    except OSError:
-        # import traceback; traceback.print_exc()
-        print("mpv IPC not running or bad configuration (see /help mpv)")
-
-    return hexchat.EAT_ALL
+		return hexchat.EAT_ALL
 
 
 if __name__ == '__main__':
