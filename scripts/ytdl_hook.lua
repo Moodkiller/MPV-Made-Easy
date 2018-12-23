@@ -1,3 +1,4 @@
+-- source: https://github.com/mpv-player/mpv/blob/master/player/lua/ytdl_hook.lua
 local utils = require 'mp.utils'
 local msg = require 'mp.msg'
 local options = require 'mp.options'
@@ -31,7 +32,7 @@ local safe_protos = Set {
 
 local function exec(args)
     local ret = utils.subprocess({args = args})
-    return ret.status, ret.stdout, ret
+    return ret.status, ret.stdout, ret, ret.killed_by_us
 end
 
 -- return true if it was explicitly set on the command line
@@ -311,14 +312,14 @@ local function add_single_video(json)
             if not edl_track and not url_is_safe(track.url) then
                 return
             end
-            if track.acodec and track.acodec ~= "none" then
-                -- audio track
+            if track.vcodec and track.vcodec ~= "none" then
+                -- video track
+                streamurl = edl_track or track.url
+            elseif track.vcodec == "none" then
+                -- according to ytdl, if vcodec is None, it's audio
                 mp.commandv("audio-add",
                     edl_track or track.url, "auto",
                     track.format_note or "")
-            elseif track.vcodec and track.vcodec ~= "none" then
-                -- video track
-                streamurl = edl_track or track.url
             end
         end
 
@@ -429,12 +430,7 @@ local function add_single_video(json)
     mp.set_property_native("file-local-options/stream-lavf-o", stream_opts)
 end
 
-mp.add_hook(o.try_ytdl_first and "on_load" or "on_load_fail", 10, function ()
-    local url = mp.get_property("stream-open-filename", "")
-    if not (url:find("ytdl://") == 1) and
-        not ((url:find("https?://") == 1) and not is_blacklisted(url)) then
-        return
-    end
+function run_ytdl_hook(url)
     local start_time = os.clock()
 
     -- check for youtube-dl in mpv's config dir
@@ -457,11 +453,10 @@ mp.add_hook(o.try_ytdl_first and "on_load" or "on_load_fail", 10, function ()
     local raw_options = mp.get_property_native("options/ytdl-raw-options")
     local allsubs = true
     local proxy = nil
-    local use_playlist = true
-	local audio_only = true
+    local use_playlist = false
 
     local command = {
-        ytdl.path, "--prefer-ffmpeg", "--audio-format best", "--audio-quality 0", "-J", "--flat-playlist",
+        ytdl.path, "--no-warnings", "-J", "--flat-playlist",
         "--sub-format", "ass/srt/best"
     }
 
@@ -497,18 +492,17 @@ mp.add_hook(o.try_ytdl_first and "on_load" or "on_load_fail", 10, function ()
     if (allsubs == true) then
         table.insert(command, "--all-subs")
     end
-	
-    if (audio_only == true) then
-        table.insert(command, "--extract-audio")
-    end	
-	
     if not use_playlist then
         table.insert(command, "--no-playlist")
     end
     table.insert(command, "--")
     table.insert(command, url)
     msg.debug("Running: " .. table.concat(command,' '))
-    local es, json, result = exec(command)
+    local es, json, result, aborted = exec(command)
+
+    if aborted then
+        return
+    end
 
     if (es < 0) or (json == nil) or (json == "") then
         local err = "youtube-dl failed: "
@@ -657,8 +651,29 @@ mp.add_hook(o.try_ytdl_first and "on_load" or "on_load_fail", 10, function ()
         add_single_video(json)
     end
     msg.debug('script running time: '..os.clock()-start_time..' seconds')
-end)
+end
 
+if (not o.try_ytdl_first) then
+    mp.add_hook("on_load", 10, function ()
+        msg.verbose('ytdl:// hook')
+        local url = mp.get_property("stream-open-filename", "")
+        if not (url:find("ytdl://") == 1) then
+            msg.verbose('not a ytdl:// url')
+            return
+        end
+        run_ytdl_hook(url)
+    end)
+end
+
+mp.add_hook(o.try_ytdl_first and "on_load" or "on_load_fail", 10, function()
+    msg.verbose('full hook')
+    local url = mp.get_property("stream-open-filename", "")
+    if not (url:find("ytdl://") == 1) and
+        not ((url:find("https?://") == 1) and not is_blacklisted(url)) then
+        return
+    end
+    run_ytdl_hook(url)
+end)
 
 mp.add_hook("on_preloaded", 10, function ()
     if next(chapter_list) ~= nil then

@@ -1,3 +1,5 @@
+-- source: https://github.com/blue-sky-r/mpv/tree/master/scripts
+
 -- Show OSD stream title from playlist on change
 --
 -- Usefull for iPTV when switching the streams/channels defined in the playlist

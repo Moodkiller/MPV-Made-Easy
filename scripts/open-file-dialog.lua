@@ -3,6 +3,7 @@
 -- worldwide. This software is distributed without any warranty. See
 -- <https://creativecommons.org/publicdomain/zero/1.0/> for a copy of the CC0
 -- Public Domain Dedication, which applies to this software.
+-- source: https://github.com/rossy/mpv-open-file-dialog
 
 utils = require 'mp.utils'
 

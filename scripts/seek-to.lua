@@ -1,3 +1,5 @@
+-- source: https://github.com/occivink/mpv-scripts#seek-tolua
+
 local assdraw = require 'mp.assdraw'
 local active = false
 local cursor_position = 1

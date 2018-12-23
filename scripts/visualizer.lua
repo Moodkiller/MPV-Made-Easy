@@ -1,4 +1,6 @@
+-- source: https://github.com/mfcc64/mpv-scripts
 -- various audio visualization
+-- press c to cycle
 
 local opts = {
     mode = "novideo",
@@ -255,7 +257,7 @@ local function get_visualizer(name, quality)
                 "mode           = p2p," ..
             "format             = rgb0 [vo]"
     elseif name == "off" then
-        return "[aid1] afifo [ao]; [vid1] fifo [vo]"
+        return "[aid1] afifo [ao]"
     end
 
     msg.log("error", "invalid visualizer name")
