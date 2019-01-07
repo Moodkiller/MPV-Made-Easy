@@ -45,7 +45,7 @@ local settings = {
     [
       "mkv", "avi", "mp4", "ogv", "webm", "rmvb", "flv", "wmv",
       "mpeg", "mpg", "m4v", "3gp","mp3", "wav", "ogv", "flac",
-      "m4a", "wma", "jpg", "gif", "png", "jpeg", "webp"
+      "m4a", "wma"
     ]
   ]],
 
