@@ -10,46 +10,16 @@ import hexchat
 
 
 __module_name__ = "mpv now playing (MK Mod)"
-__module_version__ = "0.4.3"
+__module_version__ = "0.4.4"
 __module_description__ = "Announces info of the currently loaded 'file' in mpv"
 
-# # Configuration # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # Configuration Part 1, Part 2 is at the end of this script  # # # # # # # # # # # # # # # # # # #
 
 # Paths to mpv's IPC socket or named pipe.
 # Set the same path in your mpv.conf `input-ipc-server` setting
 # or adjust these values.
 WIN_PIPE_PATH = R"\\.\pipe\mpvsocket"
 UNIX_PIPE_PATH = "/tmp/mpv-socket"  # variables are expanded
-
-# Windows only:
-# The command that is being executed.
-# Supports mpv's property expansion:
-# https://mpv.io/manual/stable/#property-expansion
-# https://mpv.io/manual/master/#property-list
-
-# \x02 	bold
-# \x03 	colored text
-# \x1D 	italic text
-# \x1F 	underlined text
-# \x16 	swap background and foreground colors ("reverse video")
-# \x0F 	reset all formatting
-
-######## Set the format/properties for audio files ###############
-audioformats = ("flac", "acc", "mp3", "ac3", "m4a", "opus", "wav", "wma", "webm", "floatp")
-
-CMD_FMT_audio = R'me is listening to \x0307\x02${metadata/artist}\x0F - \x0307\x02${media-title}\x0F {${file-size} • ${file-format} ${audio-bitrate} ${audio-params/channel-count}ch} • [${time-pos}${!duration==0: / ${duration}}] playing in \x0306${mpv-version}\x0F'
-
-######## Set the format/properties for video files ###############
-CMD_FMT_video = R'me is playing: \x0307\x02${media-title}\x0F • ${file-size} • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F'
-
-
-#CMD_FMT = R'me is playing: ${media-title} [${time-pos}${!duration==0: / ${duration}}]'
-# On UNIX, the above is not supported yet
-# and this Python format string is used instead.
-# `{title}` will be replaced with the title.
-LEGACY_CMD_FMT = ""
-#LEGACY_CMD_FMT = "me is playing: {title} in MPV"
-#LEGACY_CMD_FMT = R'me is playing: 07${filename} ◘ ${file-size} ◘ [${time-pos}${!duration==0: / ${duration}}] in 06${mpv-version}'
 
 # # The Script # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -244,16 +214,51 @@ class UnixMpvIpcClient(MpvIpcClient):
 
 
 ###############################################################################
+# # Configuration Part 2
+###############################################################################
 
+# convert MiB to MB for example and remove the space: i.e 35 MiB -> 37MB
+def prettiBytesSize(num, suffix='B'):
+    for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
+        if abs(num) < 1000.0:
+            return '%3.1f%s%s' % (num, unit, suffix)
+        num /= 1000.0
+    return '%.1f%s%s' % (num, 'Yi', suffix)
+
+# convert mbps and remove the space after number: i.e 1.098 mbps -> 1098mbps. This can also be changed to 1.1MB/s for eg
+def prettiBytesRate(num, suffix='s'):
+    for unit in ['', 'Kbp', 'Mbp', 'Gbp']:
+        if abs(num) < 10000.0:
+            return '%3.1f%s%s' % (num, unit, suffix)
+        num /= 1000.0
+    return '%.1f%s%s' % (num, 'Yi', suffix)
+	
+# Windows only:
+# The command that is being executed.
+# Supports mpv's property expansion:
+# https://mpv.io/manual/stable/#property-expansion
+# https://mpv.io/manual/master/#property-list
+
+# \x02 	bold
+# \x03 	colored text
+# \x1D 	italic text
+# \x1F 	underlined text
+# \x16 	swap background and foreground colors ("reverse video")
+# \x0F 	reset all formatting
+	
+######## Set the format/properties for audio files ###############
+audioformats = ("flac", "acc", "mp3", "ac3", "m4a", "opus", "wav", "wma", "webm", "floatp")
+	
 def mpv_np(caller, callee, helper): 
 		try:
 			with MpvIpcClient.for_platform() as mpv:
-				#if mpv.command("get_property", "filename") == '*.flac' or '*.acc' or '*.mp3' or '*.ac3' or '*.m4a' or '*.opus' or '*.wav' or '*.wma':
-				if mpv.command("get_property", "file-format") in audioformats:
-					#artist = mpv.command.get_metadata(data, {"artist", "ARTIST"})
-					command = mpv.expand_properties(CMD_FMT_audio)
+				size = mpv.command("get_property", "file-size")
+				BitRate = mpv.command("get_property", "audio-bitrate")
+				fileformat = mpv.command("get_property", "file-format")
+				if fileformat in audioformats:
+					command = mpv.expand_properties("me is listening to \x0307\x02${metadata/artist}\x0F - \x0307\x02${media-title}\x0F {" + prettiBytesSize(size) + " • " + fileformat.upper() + " " + prettiBytesRate(BitRate) + " • ${audio-params/channel-count}ch} • [${time-pos}${!duration==0: / ${duration}}] playing in \x0306${mpv-version}\x0F")
 				else:
-					command = mpv.expand_properties(CMD_FMT_video)
+					command = mpv.expand_properties("me is playing: \x0307\x02${media-title}\x0F • " + prettiBytesSize(size) + " • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F")
 				if command is None:
 					print("unable to expand property string - falling back to legacy")
 					command = NotImplemented
