@@ -50,7 +50,7 @@ local settings = {
   ]],
 
   --loadfiles at startup if there is 0 or 1 items in playlist, if 0 uses worḱing dir for files
-  loadfiles_on_start = false,
+  loadfiles_on_start = true,
 
   --sort playlist on mpv start
   sortplaylist_on_start = false,
@@ -65,7 +65,7 @@ local settings = {
   linux_over_windows = false,
 
   --path where you want to save playlists. Do not use shortcuts like ~ or $HOME
-  playlist_savepath = "./Playlist",
+  playlist_savepath = "Playlist",
 
 
   --show playlist or filename every time a new file is loaded 
@@ -102,7 +102,7 @@ local settings = {
   showamount = 16,
 
   --font size scales by window, if false requires larger font and padding sizes
-  scale_playlist_by_window=true,
+  scale_playlist_by_window=false,
   --playlist ass style overrides inside curly brackets, \keyvalue is one field, extra \ for escape in lua
   --example {\\fnUbuntu\\fs10\\b0\\bord1} equals: font=Ubuntu, size=10, bold=no, border=1
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
@@ -128,7 +128,7 @@ local settings = {
   --%cursor = position of navigation
   --%plen = playlist length
   --%N = newline
-  playlist_header_eng = "Playing: %filename%N%Nadvanced playlist - %cursor/%plen",
+  playlist_header = "Playing: %filename%N%Nadvanced playlist - %cursor/%plen",
   --playlist display signs, prefix is before filename, and suffix after
   --currently playing file 
   playing_str_prefix = "▷ - ",
@@ -173,16 +173,6 @@ opts.read_options(settings, "playlistmanager")
 local utils = require("mp.utils")
 local msg = require("mp.msg")
 local assdraw = require("mp.assdraw")
-
-
---高级播放列表添加多国语言支持
-if(settings.playlist_header_lang =="chs") then
-  settings.playlist_header = settings.playlist_header_chs
-else
-  settings.playlist_header = settings.playlist_header_eng
-end
-
-
 
 --parse filename json
 if(settings.filename_replace~="") then
@@ -529,14 +519,14 @@ function jumptofile()
 end
 
 --Creates a playlist of all files in directory, will keep the order and position
---For exaple, Folder has 12 files, you open the 5th file and run this, the remaining 7 are added behind the 5th file and prior 4 files before it
+--For example, Folder has 12 files, you open the 5th file and run this, the remaining 7 are added behind the 5th file and prior 4 files before it
 function playlist(force_dir)
   refresh_globals()
   if not directory and plen > 0 then return end
   local hasfile = true
   if plen == 0 then
     hasfile = false
-    dir = mp.get_property('working-directory')
+    dir = mp.get_property("path")
   else
     dir = directory
   end
@@ -574,7 +564,7 @@ function playlist(force_dir)
     if c2 > 0 or c>0 then
       mp.osd_message("Added "..c + c2.." files to playlist")
     else
-      mp.osd_message("No additional files found")
+      mp.osd_message("No additional files found in "..dir)
     end
     cursor = mp.get_property_number('playlist-pos', 1)
   else
@@ -746,8 +736,8 @@ end
 mp.register_script_message("playlistmanager", handlemessage)
 
 mp.add_key_binding("p", "sortplaylist", sortplaylist)
--- mp.add_key_binding("CTRL+P", "shuffleplaylist", shuffleplaylist)
--- mp.add_key_binding("P", "loadfiles", playlist)
+mp.add_key_binding("CTRL+P", "shuffleplaylist", shuffleplaylist)
+mp.add_key_binding("P", "loadfiles", playlist)
 mp.add_key_binding("k", "saveplaylist", save_playlist)
 mp.add_key_binding("ctrl+p", "showplaylist", toggle_playlist)
 
