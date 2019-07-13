@@ -5,22 +5,26 @@
 * Similar feel and behaviour to MPC-HC (shortcut keys and mouse buttons) :
      * a - Toggles audio track.
      * s - Toggles subtitle track.
-     * Spacebar - Toggle pause.
-     * Mouse right-click - Toggle pause.
-     * Mouse side-buttons (if applicable) - Skip through chapter markers.
+     * Spacebar / Mouse right-click - Toggle pause.
+     * Mouse side-buttons (if applicable) - Skip through chapter markers (forward/backward).
      * Left/Right arrow keys - Seek ~10 seconds forward/backwards
-     * Up/Down arrow keys  & Mouse wheel - Increase/decrease volume by 5
+     * Up/Down arrow keys & Mouse wheel - Increase/decrease volume by 5
      * Shift+S - Take screenshots (with subtitles).
-     * Ctrl+o - Full-featured open file box.
+     * Ctrl+s - Take screenshots (no subtitles).
+     * Ctrl+o - Full-featured Open file box.
      * Ctrl+g - Go to a specified timestamp.
-     * Ctrl+p - Show current playlist and select an item to play. 
-* Screen-shots are placed in the root videos directory under a new folder called "Screens".
+     * Ctrl+p - Show current playlist.
+        * Up/down arrows - highlight / scroll through playlist.
+        * Enter - Select / play highlighted file.
+        * Ctrl+Shift+p - Shuffle playlist (again to sort alphabetically).
+        * Shift+p - add files in currently playing directory to the playlist.
+* Screen-shots are placed in the root videos directory under a new folder called "Screens" (can be changed within `mpv.conf`).
 * Visualiser for audio tracks.
 * Remember video position of previous played file (video/audio).
-* Lightweight (no heavy filters or extra filters).
-* Adjusted OSC (On Screen Controller) have a smaller footprint and be more practical.
+* Lightweight (no heavy filters or extra programes required).
+* Adjusted OSC (On Screen Controller) to have a smaller footprint and be more practical than the default mpv varient.
 * Play next sequential file in the current files folder.
-* YouTube link player (drag and drop only)
+* YouTube URL player (drag and drop only)
 * More as I remember them...
 
 
