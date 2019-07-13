@@ -4,7 +4,7 @@ function Check-7z {
     {
         $download_file = (Get-Location).Path + "\7z.zip"
         Write-Host "Downloading 7z" -ForegroundColor Green
-        Invoke-WebRequest -Uri "http://download.sourceforge.net/sevenzip/7za920.zip" -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile $download_file
+        Invoke-WebRequest -Uri "https://download.sourceforge.net/sevenzip/7za920.zip" -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile $download_file
         Write-Host "Extracting 7z" -ForegroundColor Green
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         [System.IO.Compression.ZipFile]::ExtractToDirectory($download_file, $7zdir)
@@ -40,7 +40,7 @@ function Check-Mpv {
 
 function Download-Mpv ($filename) {
     Write-Host "Downloading" $filename -ForegroundColor Green
-    $link = "http://download.sourceforge.net/mpv-player-windows/" + $filename
+    $link = "https://download.sourceforge.net/mpv-player-windows/" + $filename
     Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile $filename
 }
 
