@@ -102,7 +102,7 @@ local settings = {
   showamount = 16,
 
   --font size scales by window, if false requires larger font and padding sizes
-  scale_playlist_by_window=false,
+  scale_playlist_by_window=true,
   --playlist ass style overrides inside curly brackets, \keyvalue is one field, extra \ for escape in lua
   --example {\\fnUbuntu\\fs10\\b0\\bord1} equals: font=Ubuntu, size=10, bold=no, border=1
   --read http://docs.aegisub.org/3.2/ASS_Tags/ for reference of tags
@@ -111,7 +111,7 @@ local settings = {
   style_ass_tags = "{\\an7\\fs5\\bord0.5\\blur0.5\\\fscy110\\fsp0.35\\fnSource Sans Pro}",
   --paddings from top left corner
   text_padding_x = 10,
-  text_padding_y = 20,
+  text_padding_y = 10,
 
   --set title of window with stripped name
   set_title_stripped = false,
@@ -161,7 +161,7 @@ local settings = {
   --show file playlistnumber before filename ex 01 - ▷ - file.mkv
   show_prefix_filenumber = true,
   --show playlistnumber before other prefixes
-  show_prefix_filenumber_first = false,
+  show_prefix_filenumber_first = true,
   --prefix and suffix will be before and after the raw playlistnumber
   prefix_filenumber_prefix = '',
   prefix_filenumber_suffix = ' - '
@@ -433,7 +433,7 @@ end
 function toggle_playlist()
   if settings.open_toggles then
     if playlist_visible then
-      keybindstimer:kill()
+      -- keybindstimer:kill()
       remove_keybinds()
       return
     end
@@ -513,7 +513,8 @@ function jumptofile()
     end
     mp.commandv("playlist-next", "weak")
   end
-  if not settings.show_playlist_on_fileload == 2 then
+  --if not settings.show_playlist_on_fileload == 2 then
+  if settings.show_playlist_on_fileload ~= 2 then
     remove_keybinds()
   end
 end
@@ -526,7 +527,8 @@ function playlist(force_dir)
   local hasfile = true
   if plen == 0 then
     hasfile = false
-    dir = mp.get_property("path")
+    --dir = mp.get_property("path")
+    dir = mp.get_property("working-directory")
   else
     dir = directory
   end
@@ -731,7 +733,17 @@ function handlemessage(msg, value, value2)
   if msg == "shuffle" then shuffleplaylist() ; return end
   if msg == "loadfiles" then playlist(value) ; return end
   if msg == "save" then save_playlist() ; return end
+  if msg == "addurl" then
+	url_table[value] = value2
+	refresh_globals()
+	if playlist_visible then showplaylist() end
+	return
+  end
 end
+
+mp.observe_property('playlist-count', "number", function()
+  if playlist_visible then showplaylist() end
+end)
 
 mp.register_script_message("playlistmanager", handlemessage)
 
