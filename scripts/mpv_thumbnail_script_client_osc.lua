@@ -692,7 +692,6 @@ local thumbnailer_options = {
 
     -- Only automatically thumbnail videos shorter than this (seconds)
     autogenerate_max_duration = 3600, -- 1 hour
-
     -- SHA1-sum filenames over this length
     -- It's nice to know what files the thumbnails are (hence directory names)
     -- but long URLs may approach filesystem limits.
@@ -1075,11 +1074,15 @@ function Thumbnailer:register_client()
     -- Notify workers to generate thumbnails when video loads/changes
     -- This will be executed after the on_video_change (because it's registered after it)
     mp.observe_property("video-dec-params", "native", function()
-        local duration = mp.get_property_native("duration")
+        -- as of an mpv version released after February 2019, this property doesnt seem to output a readable format in decimals any more
+		--local duration = mp.get_property_native("duration")
+		-- manually set the video duration now (i.e fake it) - downside, all video will now have thumbnails generated for them.
+        local duration = 1800
         local max_duration = thumbnailer_options.autogenerate_max_duration
 
         if self.state.available and thumbnailer_options.autogenerate then
-            -- Notify if autogenerate is on and video is not too long
+            print("duration: " .. duration)
+			-- Notify if autogenerate is on and video is not too long
             if duration < max_duration or max_duration == 0 then
                 self:start_worker_jobs()
             end
@@ -1253,7 +1256,9 @@ local user_opts = {
     scalewindowed = 1,          -- scaling of the controller when windowed
     scalefullscreen = 1,        -- scaling of the controller when fullscreen
     scaleforcedwindow = 2,      -- scaling when rendered on a forced window
-    vidscale = true,            -- scale the controller with the video?
+    scalefullscreenNoVideo = 1, -- scaling of the controller when fullscreen and no video (i.e music)
+    scaleNoVideo = 1.25,      	-- scaling when rendered on a forced window and no video (i.e music)
+    vidscale = no,            	-- scale the controller with the video?
     valign = 0.8,               -- vertical alignment, -1 (top) to 1 (bottom)
     halign = 0,                 -- horizontal alignment, -1 (left) to 1 (right)
     barmargin = 0,              -- vertical margin of top/bottombar
@@ -3059,7 +3064,7 @@ function osc_init()
     local scale = 1
 
     if (mp.get_property("video") == "no") then -- dummy/forced window
-        scale = user_opts.scaleforcedwindow
+        scale = user_opts.scaleNoVideo
     elseif state.fullscreen then
         scale = user_opts.scalefullscreen
     else
@@ -3173,6 +3178,7 @@ function osc_init()
         function () mp.commandv("frame-back-step") end
     ne.eventresponder["mbtn_right_down"] =
         function () mp.commandv("seek", -30, "relative", "keyframes") end
+	
 
     --skipfrwd
     ne = new_element("skipfrwd", "button")
@@ -3184,7 +3190,7 @@ function osc_init()
     ne.eventresponder["shift+mbtn_left_down"] =
         function () mp.commandv("frame-step") end
     ne.eventresponder["mbtn_right_down"] =
-        function () mp.commandv("seek", 60, "relative", "keyframes") end
+        function () mp.commandv("seek", 60, "relative", "keyframes") end	
 
     --ch_prev
     ne = new_element("ch_prev", "button")
@@ -3952,5 +3958,6 @@ end
 visibility_mode(user_opts.visibility, true)
 mp.register_script_message("osc-visibility", visibility_mode)
 mp.add_key_binding(nil, "visibility", function() visibility_mode("cycle") end)
+
 
 set_virt_mouse_area(0, 0, 0, 0, "input")
