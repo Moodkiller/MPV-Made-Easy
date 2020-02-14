@@ -2,6 +2,7 @@
 doc/
 installer/*.bat
 installer/*.ico
+installer/configure-opengl-hq.bat
 d3dcompiler_*.dll
 mpv.com
 mpv.exe
