@@ -11,3 +11,6 @@ youtube-dl.exe
 log.txt
 *.txt
 *.new
+mpv/fonts.conf
+*.ttf
+*.otf
