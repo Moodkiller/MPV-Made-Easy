@@ -40,13 +40,15 @@ function Check-Mpv {
 
 function Download-Mpv ($filename) {
     Write-Host "Downloading" $filename -ForegroundColor Green
+    $global:progressPreference = 'Continue'
     $link = "https://download.sourceforge.net/mpv-player-windows/" + $filename
     Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile $filename
 }
 
 function Download-Youtubedl ($version) {
     Write-Host "Downloading youtube-dl ($version)" -ForegroundColor Green
-    $link = "https://github.com/rg3/youtube-dl/releases/download/" + $version + "/youtube-dl.exe"
+    $global:progressPreference = 'Continue'
+    $link = "https://yt-dl.org/downloads/" + $version + "/youtube-dl.exe"
     Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile "youtube-dl.exe"
 }
 
@@ -73,10 +75,12 @@ function Get-Latest-Mpv($Arch) {
 }
 
 function Get-Latest-Youtubedl {
-    $link = "https://github.com/rg3/youtube-dl/releases.atom"
+    $link = "https://yt-dl.org/downloads/latest/youtube-dl.exe"
     Write-Host "Fetching RSS feed for youtube-dl" -ForegroundColor Green
-    $result = [xml](New-Object System.Net.WebClient).DownloadString($link)
-    $version = $result.feed.entry[0].title.split(" ")[-1]
+    $global:progressPreference = 'silentlyContinue'
+    $resp = Invoke-WebRequest $link -MaximumRedirection 0 -ErrorAction Ignore -UseBasicParsing
+    $redirect_link = $resp.Headers.Location
+    $version = $redirect_link.split("/")[4]
     return $version
 }
 

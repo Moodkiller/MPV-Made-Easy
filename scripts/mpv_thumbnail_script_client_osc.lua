@@ -1271,7 +1271,7 @@ local user_opts = {
     layout = "bottombar",
     seekbarstyle = "bar",       -- slider (diamond marker), knob (circle
                                 -- marker with guide), or bar (fill)
-    title = "${filename} • ${file-size} • Video: ${video-params/w}x${video-params/h}/${video-format}/${video-params/plane-depth}bit • Audio: ${audio-params/format}/${audio-params/channels} • Playlist: ${playlist-pos-1}/${playlist-count}",    -- string compatible with property-expansion to be shown as OSC title
+    title = "${filename} • ${file-size} • Video: ${video-params/w}x${video-params/h}/${video-params/pixelformat}bit • Audio: ${audio-params/format}/${audio-params/channels} • Playlist: ${playlist-pos-1}/${playlist-count}",    -- string compatible with property-expansion to be shown as OSC title
                                 -- to be shown as OSC title
     tooltipborder = 1,          -- border of tooltip in bottom/topbar
     timetotal = false,          -- display total time instead of remaining time?
@@ -3831,7 +3831,7 @@ end
 validate_user_opts()
 
 mp.register_event("start-file", request_init)
-mp.register_event("tracks-changed", request_init)
+-- mp.register_event("tracks-changed", request_init) #The 'tracks-changed' event is deprecated and will be removed.
 mp.observe_property("playlist", nil, request_init)
 
 mp.register_script_message("osc-message", show_message)
