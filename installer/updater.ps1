@@ -42,7 +42,6 @@ function Download-Mpv ($filename) {
     Write-Host "Downloading" $filename -ForegroundColor Green
     $global:progressPreference = 'Continue'
     $link = "https://download.sourceforge.net/mpv-player-windows/" + $filename
-    # Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile $filename
     DownloadFile $link $filename
 }
 
@@ -50,7 +49,6 @@ function Download-Youtubedl ($version) {
     Write-Host "Downloading youtube-dl ($version)" -ForegroundColor Green
     $global:progressPreference = 'Continue'
     $link = "https://yt-dl.org/downloads/" + $version + "/youtube-dl.exe"
-    # Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile "youtube-dl.exe"
     DownloadFile $link "youtube-dl.exe"
 }
 
