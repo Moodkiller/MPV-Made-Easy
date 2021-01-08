@@ -42,14 +42,46 @@ function Download-Mpv ($filename) {
     Write-Host "Downloading" $filename -ForegroundColor Green
     $global:progressPreference = 'Continue'
     $link = "https://download.sourceforge.net/mpv-player-windows/" + $filename
-    Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile $filename
+    # Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile $filename
+    DownloadFile $link $filename
 }
 
 function Download-Youtubedl ($version) {
     Write-Host "Downloading youtube-dl ($version)" -ForegroundColor Green
     $global:progressPreference = 'Continue'
     $link = "https://yt-dl.org/downloads/" + $version + "/youtube-dl.exe"
-    Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile "youtube-dl.exe"
+    # Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile "youtube-dl.exe"
+    DownloadFile $link "youtube-dl.exe"
+}
+
+# Taken from https://stackoverflow.com/questions/21422364/is-there-any-way-to-monitor-the-progress-of-a-download-using-a-webclient-object
+function DownloadFile($url, $targetFile)
+{
+    Write-Host "Downloading $url" -ForegroundColor Green
+    $uri = New-Object "System.Uri" "$url"
+    $request = [System.Net.HttpWebRequest]::Create($uri)
+    $request.set_Timeout(15000) #15 second timeout
+    $response = $request.GetResponse()
+    $totalLength = [System.Math]::Floor($response.get_ContentLength()/1024)
+    $responseStream = $response.GetResponseStream()
+    $targetStream = New-Object -TypeName System.IO.FileStream -ArgumentList $targetFile, Create
+    $buffer = new-object byte[] 10KB
+    $count = $responseStream.Read($buffer,0,$buffer.length)
+    $downloadedBytes = $count
+    while ($count -gt 0)
+    {
+        $targetStream.Write($buffer, 0, $count)
+        $count = $responseStream.Read($buffer,0,$buffer.length)
+        $downloadedBytes = $downloadedBytes + $count
+        $percentComplete = ((([System.Math]::Floor($downloadedBytes/1024)) / $totalLength)  * 100)
+        Write-Progress -activity "Downloading file '$($url.split('/') | Select -Last 1)'" -status "Downloaded $($percentComplete.ToString("00.00"))% ($([System.Math]::Floor($downloadedBytes/1024))K of $($totalLength)K): " -PercentComplete $percentComplete
+    }
+
+    Write-Progress -activity "Finished downloading file '$($url.split('/') | Select -Last 1)'"
+    $targetStream.Flush()
+    $targetStream.Close()
+    $targetStream.Dispose()
+    $responseStream.Dispose()
 }
 
 function Extract-Mpv ($file) {
