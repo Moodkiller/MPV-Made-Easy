@@ -1,0 +1,6 @@
+<settings>
+  <channel>weekly</channel>
+  <arch>x86_64</arch>
+  <autodelete>true</autodelete>
+  <getffmpeg>false</getffmpeg>
+</settings>

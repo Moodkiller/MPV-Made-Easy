@@ -14,3 +14,10 @@ log.txt
 mpv/fonts.conf
 *.ttf
 *.otf
+mpv/mpv.conf.kokomins
+MPV-Made-Easy-Theater-Mode.lnk
+mpv/mpv.conf.MK
+yt-dlp.exe
+scripts/TheatreMode.ps1
+mpv/shaders/*
+

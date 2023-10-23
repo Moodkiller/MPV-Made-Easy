@@ -15,17 +15,19 @@
      * Ctrl+g - Go to a specified timestamp.
      * Ctrl+p - Show current playlist.
         * Up/down arrows - highlight / scroll through playlist.
-        * Enter - Select / play highlighted file.
+        * Left/right arrow - select item highlighed entry (to move)
+        * Enter - play highlighted file.
         * Ctrl+Shift+p - Shuffle playlist (again to sort alphabetically).
         * Shift+p - add files in currently playing directory to the playlist.
-* Screen-shots are placed in the root videos directory under a new folder called "Screens" (can be changed within `mpv.conf`).
+* Screenshots are placed in the video source directory under a new folder called "Screens" (can be changed within `mpv.conf`).
 * Visualiser for audio tracks.
 * Remember video position of previous played file (video/audio).
 * Lightweight (no heavy filters or extra programes required).
-* Adjusted OSC (On Screen Controller) to have a smaller footprint and be more practical than the default mpv varient.
+* Modern OSC (On Screen Controller) to have a smaller footprint and be more practical than the default MPV varient.
 * Play next sequential file in the current files folder.
 * YouTube URL player (drag and drop only)
-* More as I remember them...
+* Updater script that can be automated via Window Task Manager
+* Hexchat Nowplaying Script included for feature rich messages (audio, video and streaming supported)
 
 
 # Installation:
@@ -33,16 +35,17 @@
 One of the nicest features of MPV is that it requires no installation and can be run from its own folder (portable).
 1. Clone or download this repo.
 2. Unzip to your desired location.
-3. Run updater.bat (this will download the latest MPV GUI build from the source stated below and youtube-dl if you pressed 'y' when prompted).
+3. Run updater.bat (this will download the latest MPV GUI build from the source stated below and `youtube-dl` OR `yt-dlp` if you pressed 'y' when prompted).
 4. Optional: Run installer/mpv-install.bat as administrator to set file associations.
+5. Optional: See below for Hexchat NowPlaying integration.
 
 
 
 # Hexchat Integration:
 
-Hexchats latest version (2.14.1) doesn't have any built in "now playing" plugins to use. And as of this version, the default MPC-HC "now-playing" script doesn't function. I have included a modified version of an MPV now playing script from github user, FichteFoll, in this pack. A prerequisite, Python 3.6 needs to be enabled/selected when you install Hexchat. If you have Hexchat already installed, no problem, just re-run the installer and choose Python 3.x from the Custom Installation screen (right at the bottom).
+Hexchats latest version (2.16.1) doesn't have any built in "now playing" plugins to use. And as of this version, the default MPC-HC "now-playing" script doesn't function. I have included a modified version of an MPV now playing script from github user, FichteFoll, in this pack. Note: This has been modified with some QOL adjustments and pretifying. Not to mention this will also work when streaming video. A prerequisite, Python 3.6 needs to be enabled/selected when you install Hexchat. If you have Hexchat already installed, no problem, just re-run the installer and choose Python 3.x from the Custom Installation screen (right at the bottom).
 
-1. Right-click and copy the file 'mpv_np.py' (located in 'Hexchat plugin') from the downloaded pack.
+1. Right-click and copy the file 'mpv_np.py' (located in 'Hexchat addon' folder) from the downloaded pack.
 2. Press the Windows key+R and type '%APPDATA%\HexChat' and press enter.
 3. Paste the copied file into the 'addons' folder.
 4. In Hexchat go to Window > Plugins and Scripts > Load and browse to your addons folder where you pasted 'mpv_np.py'. Normally this is 'C:\Users\moodkiller\AppData\Roaming\HexChat\addons'
@@ -52,11 +55,11 @@ Hexchats latest version (2.14.1) doesn't have any built in "now playing" plugins
 # Screenshots
 ![alt text](https://i.imgur.com/GlXp12f.png "Open file window")
 
-![alt text](https://i.imgur.com/MphDKcp.png "OSC overview, Thumbnail preview, seek bar, volume bar, window title")
+![alt text](https://i.imgur.com/mDnhxZv.png "OSC overview, Thumbnail preview, seek bar, volume bar, window title")
 
 ![alt text](https://i.imgur.com/nomUrXt.png "Seek to specified timestamp")
 
-![alt text](https://i.imgur.com/xB3cbkY.png "HexChat 2.14.x now playing plugin")
+![alt text](https://i.imgur.com/xB3cbkY.png "HexChat 2.16.x now playing plugin")
 
 # Resources:
    GUI build: https://sourceforge.net/projects/mpv-player-windows/files/  

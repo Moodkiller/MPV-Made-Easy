@@ -10,7 +10,7 @@ import hexchat
 
 
 __module_name__ = "mpv now playing (MK Mod)"
-__module_version__ = "0.4.4"
+__module_version__ = "0.4.5"
 __module_description__ = "Announces info of the currently loaded 'file' in mpv"
 
 # # Configuration Part 1, Part 2 is at the end of this script  # # # # # # # # # # # # # # # # # # #
@@ -249,29 +249,47 @@ def prettiBytesRate(num, suffix='s'):
 ######## Set the format/properties for audio files ###############
 audioformats = ("flac", "acc", "mp3", "ac3", "m4a", "opus", "wav", "wma", "webm", "floatp")
 	
-def mpv_np(caller, callee, helper): 
-		try:
-			with MpvIpcClient.for_platform() as mpv:
-				size = mpv.command("get_property", "file-size")
-				BitRate = mpv.command("get_property", "audio-bitrate")
-				fileformat = mpv.command("get_property", "file-format")
-				if fileformat in audioformats:
-					command = mpv.expand_properties("me is listening to \x0307\x02${metadata/artist}\x0F - \x0307\x02${media-title}\x0F {" + prettiBytesSize(size) + " • " + fileformat.upper() + " " + prettiBytesRate(BitRate) + " • ${audio-params/channel-count}ch} • [${time-pos}${!duration==0: / ${duration}}] playing in \x0306${mpv-version}\x0F")
-				else:
-					command = mpv.expand_properties("me is playing: \x0307\x02${media-title}\x0F • " + prettiBytesSize(size) + " • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F")
-				if command is None:
-					print("unable to expand property string - falling back to legacy")
-					command = NotImplemented
-				if command is NotImplemented:
-					title = mpv.command("get_property", "media-title")
-					command = LEGACY_CMD_FMT.format(title=title)
-				hexchat.command(command)
+def mpv_np(caller, callee, helper):
+    try:
+        with MpvIpcClient.for_platform() as mpv:
+            try:
+                size = mpv.command("get_property", "file-size")
+            except RuntimeError as e:
+                error_message = e.args[1]  # Extract the error message from the exception
+                if "property unavailable" in error_message:
+                    size = None
+                else:
+                    raise
 
-		except OSError:
-			# import traceback; traceback.print_exc()
-			print("mpv IPC not running or bad configuration (see /help mpv)")
+            BitRate = mpv.command("get_property", "audio-bitrate")
+            fileformat = mpv.command("get_property", "file-format")
+            
+            if fileformat in audioformats:
+                command = mpv.expand_properties("me is listening to \x0307\x02${metadata/artist}\x0F - \x0307\x02${media-title}\x0F {" + prettiBytesSize(size) + " • " + fileformat.upper() + " " + prettiBytesRate(BitRate) + " • ${audio-params/channel-count}ch} • [${time-pos}${!duration==0: / ${duration}}] playing in \x0306${mpv-version}\x0F")
+            if size is None:
+                size_str = ""  # Or any other string you prefer to represent "not available"
+                command = mpv.expand_properties("me is streaming: \x0307\x02${media-title}\x0F • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F")
+            else:
+                size_str = prettiBytesSize(size)
+                command = mpv.expand_properties("me is watching: \x0307\x02${media-title}\x0F • " + prettiBytesSize(size) + " • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F")
+                command = mpv.expand_properties("me is watching: \x0307\x02${filename}\x0F • " + prettiBytesSize(size) + " • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F")
 
-		return hexchat.EAT_ALL
+            if command is None:
+                print("Unable to expand property string - falling back to legacy")
+                command = NotImplemented
+
+            if command is NotImplemented:
+                title = mpv.command("get_property", "media-title")
+                command = LEGACY_CMD_FMT.format(title=title)
+
+            hexchat.command(command)
+
+    except OSError:
+        # import traceback; traceback.print_exc()
+        print("mpv IPC not running or bad configuration (see /help mpv)")
+
+    return hexchat.EAT_ALL
+
 
 
 if __name__ == '__main__':
