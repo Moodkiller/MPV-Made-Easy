@@ -1592,12 +1592,12 @@ function osc_init()
 
     ne.softrepeat = true
     ne.content = '\xEF\x8E\xA0'
-    ne.eventresponder['mbtn_right_down'] =
+    ne.eventresponder['mbtn_left_down'] =
         --function () mp.command('add chapter -1') end
         function () mp.commandv('add','chapter', -1) end
     ne.eventresponder['shift+mbtn_left_down'] =
         function () mp.commandv('frame-back-step') end
-    ne.eventresponder['mbtn_left_down'] =
+    ne.eventresponder['mbtn_right_down'] =
         --function () mp.command('seek -90') end
         function () mp.commandv('seek', -90, 'relative', 'keyframes') end
 
@@ -1606,12 +1606,12 @@ function osc_init()
 
     ne.softrepeat = true
     ne.content = '\xEF\x8E\x9F'
-    ne.eventresponder['mbtn_right_down'] =
+    ne.eventresponder['mbtn_left_down'] =
         --function () mp.command('add chapter +1') end
         function () mp.commandv('add','chapter', 1) end
     ne.eventresponder['shift+mbtn_left_down'] =
         function () mp.commandv('frame-step') end
-    ne.eventresponder['mbtn_left_down'] =
+    ne.eventresponder['mbtn_right_down'] =
         --function () mp.command('seek +87') end
         function () mp.commandv('seek', 87, 'relative', 'keyframes') end
 
