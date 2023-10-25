@@ -1675,16 +1675,20 @@ function osc_init()
         end
         return msg
     end
-    ne.eventresponder['mbtn_left_up'] =
-        function () set_track('sub', 1) end
-    ne.eventresponder['mbtn_right_up'] =
-        function () set_track('sub', -1) end
+    ne.eventresponder['mbtn_left_up'] = function ()
+        set_track('sub', 1) 
+		show_message(get_tracklist('sub')) end
+    ne.eventresponder['mbtn_right_up'] = function ()
+        set_track('sub', -1)
+		show_message(get_tracklist('sub')) end
     ne.eventresponder['shift+mbtn_left_down'] =
         function () show_message(get_tracklist('sub')) end
-    ne.eventresponder["wheel_down_press"] =
-        function () set_track("sub", 1) end
-    ne.eventresponder["wheel_up_press"] =
-        function () set_track("sub", -1) end
+    ne.eventresponder["wheel_down_press"] = function ()
+        set_track("sub", 1)
+		show_message(get_tracklist('sub')) end
+    ne.eventresponder["wheel_up_press"] = function ()
+        set_track("sub", -1)
+		show_message(get_tracklist('sub')) end
 	
     -- vol_ctrl
     ne = new_element('vol_ctrl', 'button')
