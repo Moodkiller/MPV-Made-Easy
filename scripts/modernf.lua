@@ -95,7 +95,7 @@ local osc_param = { -- calculated by osc_init()
 local osc_styles = {
     TransBg = '{\\blur100\\bord140\\1c&H000000&\\3c&H000000&}',
     SeekbarBg = '{\\blur0\\bord0\\1c&HFFFFFF&}',
-    SeekbarFg = '{\\blur1\\bord1\\1c&H7FFFD4&}',
+    SeekbarFg = '{\\blur1\\bord1\\1c&H878648&}',
     VolumebarBg = '{\\blur0\\bord0\\1c&H999999&}',
     VolumebarFg = '{\\blur1\\bord1\\1c&HFFFFFF&}',
     Ctrl1 = '{\\blur0\\bord0\\1c&HFFFFFF&\\3c&HFFFFFF&\\fs36\\fnmaterial-design-iconic-font}',
@@ -293,7 +293,8 @@ end
 
 -- multiplies two alpha values, formular can probably be improved
 function mult_alpha(alphaA, alphaB)
-    return 255 - (((1-(alphaA/255)) * (1-(alphaB/255))) * 255)
+     -- return 255 - (((1-(alphaA/255)) * (1-(alphaB/255))) * 255)
+	 return 255 - math.floor((255 - alphaA) * (255 - alphaB) / 255)
 end
 
 function add_area(name, x1, y1, x2, y2)
@@ -929,7 +930,7 @@ function add_layout(name)
             elements[name].layout.slider = {
                 border = 1,
                 gap = 1,
-                nibbles_top = true,
+                nibbles_top = false,
                 nibbles_bottom = true,
                 adjust_tooltip = true,
                 tooltip_style = '',
@@ -1412,7 +1413,7 @@ layouts["mid"] = function ()
     lo.alpha[3] = 128
 
     lo = add_layout('seekbar')
-    lo.geometry = {x = refX, y = refY - 96 , an = 5, w = osc_geo.w - 50, h = 16}
+    lo.geometry = {x = refX, y = refY - 96 , an = 5, w = osc_geo.w - 50, h = 48}
     lo.style = osc_styles.SeekbarFg
     lo.slider.gap = 7
     lo.slider.tooltip_style = osc_styles.Tooltip
@@ -1794,9 +1795,9 @@ function osc_init()
 					end
 				end
 				if ch == 0 then
-					return string.format('[%s] [0/%d]', mp.format_time(possec), #chapters)
+					return string.format('%s 0/%d', mp.format_time(possec), #chapters)
 				elseif chapters[ch].title then 
-					return string.format('[%s] [%d/%d][%s]', mp.format_time(possec), ch, #chapters, chapters[ch].title)
+					return string.format('%s - %s', mp.format_time(possec), chapters[ch].title)
 				end
 			end
             return mp.format_time(possec)
