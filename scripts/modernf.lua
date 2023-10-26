@@ -837,6 +837,28 @@ function get_chapterlist()
     return message
 end
 
+function get_chapterlist_onscreen()
+    local pos = mp.get_property_number('chapter', 0) + 1
+    local count, limlist = limited_list('chapter-list', pos)
+    if count == 0 then
+        return texts.nochapter
+    end
+
+    local message = string.format(texts.chapter.. ' [%d/%d]:\n', pos, count)
+    for i, v in ipairs(limlist) do
+        local time = mp.format_time(v.time)
+        local title = v.title
+        if title == nil then
+            title = string.format(texts.chapter .. ' %02d', i)
+        end
+        message = string.format('%s %s %s - %s\n', message,
+            (v.current and '●' or '○'), time, title) -- Section, time, title
+    end
+    return message
+end
+
+
+
 function show_message(text, duration)
 
     --print('text: '..text..'   duration: ' .. duration)
@@ -1593,9 +1615,10 @@ function osc_init()
 
     ne.softrepeat = true
     ne.content = '\xEF\x8E\xA0'
-    ne.eventresponder['mbtn_left_down'] =
+    ne.eventresponder['mbtn_left_down'] = function () 
         --function () mp.command('add chapter -1') end
-        function () mp.commandv('add','chapter', -1) end
+        mp.commandv('add','chapter', -1)
+		show_message(get_chapterlist_onscreen()) end
     ne.eventresponder['shift+mbtn_left_down'] =
         function () mp.commandv('frame-back-step') end
     ne.eventresponder['mbtn_right_down'] =
@@ -1607,9 +1630,10 @@ function osc_init()
 
     ne.softrepeat = true
     ne.content = '\xEF\x8E\x9F'
-    ne.eventresponder['mbtn_left_down'] =
+    ne.eventresponder['mbtn_left_down'] = function ()
         --function () mp.command('add chapter +1') end
-        function () mp.commandv('add','chapter', 1) end
+        mp.commandv('add','chapter', 1)
+		show_message(get_chapterlist_onscreen()) end
     ne.eventresponder['shift+mbtn_left_down'] =
         function () mp.commandv('frame-step') end
     ne.eventresponder['mbtn_right_down'] =
