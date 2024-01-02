@@ -1,4 +1,5 @@
 $fallback7z = Join-Path (Get-Location) "\7z\7zr.exe";
+$useragent = "mpv-win-updater"
 
 function Get-7z {
     $7z_command = Get-Command -CommandType Application -ErrorAction Ignore 7z.exe | Select-Object -Last 1
@@ -21,7 +22,7 @@ function Check-7z {
         $null = New-Item -ItemType Directory -Force (Split-Path $fallback7z)
         $download_file = $fallback7z
         Write-Host "Downloading 7zr.exe" -ForegroundColor Green
-        Invoke-WebRequest -Uri "https://www.7-zip.org/a/7zr.exe" -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile $download_file
+        Invoke-WebRequest -Uri "https://www.7-zip.org/a/7zr.exe" -UserAgent $useragent -OutFile $download_file
     }
     else
     {
@@ -69,7 +70,7 @@ function Check-Mpv {
 
 function Download-Archive ($filename, $link) {
     Write-Host "Downloading" $filename -ForegroundColor Green
-    Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile $filename
+    Invoke-WebRequest -Uri $link -UserAgent $useragent -OutFile $filename
 }
 
 function Download-Ytplugin ($plugin, $version) {
@@ -87,11 +88,11 @@ function Download-Ytplugin ($plugin, $version) {
         }
         "youtube-dl" {
             Write-Host "Downloading $plugin ($version)" -ForegroundColor Green
-            $link = -join("https://github.com/ytdl-org/youtube-dl/releases/download/", $version, "/youtube-dl.exe")
+            $link = -join("https://yt-dl.org/downloads/", $version, "/youtube-dl.exe")
             $plugin_exe = "youtube-dl.exe"
         }
     }
-    Invoke-WebRequest -Uri $link -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::FireFox -OutFile $plugin_exe
+    Invoke-WebRequest -Uri $link -UserAgent $useragent -OutFile $plugin_exe
 }
 
 function Extract-Archive ($file) {
@@ -148,11 +149,11 @@ function Get-Latest-Ytplugin ($plugin) {
             return $version
         }
         "youtube-dl" {
-            $link = "https://github.com/ytdl-org/youtube-dl/releases.atom"
+            $link = "https://yt-dl.org/downloads/latest/youtube-dl.exe"
             Write-Host "Fetching RSS feed for youtube-dl" -ForegroundColor Green
-            $resp = [xml](Invoke-WebRequest $link -MaximumRedirection 0 -ErrorAction Ignore -UseBasicParsing).Content
-            $link = $resp.feed.entry[0].link.href
-            $version = $link.split("/")[-1]
+            $resp = Invoke-WebRequest $link -MaximumRedirection 0 -ErrorAction Ignore -UseBasicParsing
+            $redirect_link = $resp.Headers.Location
+            $version = $redirect_link.split("/")[4]
             return $version
         }
     }
