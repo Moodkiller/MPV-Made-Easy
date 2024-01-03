@@ -95,7 +95,7 @@ local osc_param = { -- calculated by osc_init()
 local osc_styles = {
     TransBg = '{\\blur100\\bord140\\1c&H000000&\\3c&H000000&}',
     SeekbarBg = '{\\blur0\\bord0\\1c&HFFFFFF&}',
-    SeekbarFg = '{\\blur1\\bord1\\1c&H7FFFD4&}',
+    SeekbarFg = '{\\blur1\\bord1\\1c&H878648&}',
     VolumebarBg = '{\\blur0\\bord0\\1c&H999999&}',
     VolumebarFg = '{\\blur1\\bord1\\1c&HFFFFFF&}',
     Ctrl1 = '{\\blur0\\bord0\\1c&HFFFFFF&\\3c&HFFFFFF&\\fs36\\fnmaterial-design-iconic-font}',
@@ -293,7 +293,8 @@ end
 
 -- multiplies two alpha values, formular can probably be improved
 function mult_alpha(alphaA, alphaB)
-    return 255 - (((1-(alphaA/255)) * (1-(alphaB/255))) * 255)
+     -- return 255 - (((1-(alphaA/255)) * (1-(alphaB/255))) * 255)
+	 return 255 - math.floor((255 - alphaA) * (255 - alphaB) / 255)
 end
 
 function add_area(name, x1, y1, x2, y2)
@@ -836,6 +837,28 @@ function get_chapterlist()
     return message
 end
 
+function get_chapterlist_onscreen()
+    local pos = mp.get_property_number('chapter', 0) + 1
+    local count, limlist = limited_list('chapter-list', pos)
+    if count == 0 then
+        return texts.nochapter
+    end
+
+    local message = string.format(texts.chapter.. ' [%d/%d]:\n', pos, count)
+    for i, v in ipairs(limlist) do
+        local time = mp.format_time(v.time)
+        local title = v.title
+        if title == nil then
+            title = string.format(texts.chapter .. ' %02d', i)
+        end
+        message = string.format('%s %s %s - %s\n', message,
+            (v.current and '●' or '○'), time, title) -- Section, time, title
+    end
+    return message
+end
+
+
+
 function show_message(text, duration)
 
     --print('text: '..text..'   duration: ' .. duration)
@@ -929,7 +952,7 @@ function add_layout(name)
             elements[name].layout.slider = {
                 border = 1,
                 gap = 1,
-                nibbles_top = true,
+                nibbles_top = false,
                 nibbles_bottom = true,
                 adjust_tooltip = true,
                 tooltip_style = '',
@@ -1412,7 +1435,7 @@ layouts["mid"] = function ()
     lo.alpha[3] = 128
 
     lo = add_layout('seekbar')
-    lo.geometry = {x = refX, y = refY - 96 , an = 5, w = osc_geo.w - 50, h = 16}
+    lo.geometry = {x = refX, y = refY - 96 , an = 5, w = osc_geo.w - 50, h = 48}
     lo.style = osc_styles.SeekbarFg
     lo.slider.gap = 7
     lo.slider.tooltip_style = osc_styles.Tooltip
@@ -1592,12 +1615,13 @@ function osc_init()
 
     ne.softrepeat = true
     ne.content = '\xEF\x8E\xA0'
-    ne.eventresponder['mbtn_right_down'] =
+    ne.eventresponder['mbtn_left_down'] = function () 
         --function () mp.command('add chapter -1') end
-        function () mp.commandv('add','chapter', -1) end
+        mp.commandv('add','chapter', -1)
+		show_message(get_chapterlist_onscreen()) end
     ne.eventresponder['shift+mbtn_left_down'] =
         function () mp.commandv('frame-back-step') end
-    ne.eventresponder['mbtn_left_down'] =
+    ne.eventresponder['mbtn_right_down'] =
         --function () mp.command('seek -90') end
         function () mp.commandv('seek', -90, 'relative', 'keyframes') end
 
@@ -1606,12 +1630,13 @@ function osc_init()
 
     ne.softrepeat = true
     ne.content = '\xEF\x8E\x9F'
-    ne.eventresponder['mbtn_right_down'] =
+    ne.eventresponder['mbtn_left_down'] = function ()
         --function () mp.command('add chapter +1') end
-        function () mp.commandv('add','chapter', 1) end
+        mp.commandv('add','chapter', 1)
+		show_message(get_chapterlist_onscreen()) end
     ne.eventresponder['shift+mbtn_left_down'] =
         function () mp.commandv('frame-step') end
-    ne.eventresponder['mbtn_left_down'] =
+    ne.eventresponder['mbtn_right_down'] =
         --function () mp.command('seek +87') end
         function () mp.commandv('seek', 87, 'relative', 'keyframes') end
 
@@ -1641,16 +1666,20 @@ function osc_init()
         end
         return msg
     end
-    ne.eventresponder['mbtn_left_up'] =
-        function () set_track('audio', 1) end
-    ne.eventresponder['mbtn_right_up'] =
-        function () set_track('audio', -1) end    
+    ne.eventresponder['mbtn_left_up'] = function () 
+        set_track('audio', 1)
+        show_message(get_tracklist('audio')) end
+    ne.eventresponder['mbtn_right_up'] = function () 
+        set_track('audio', -1)
+        show_message(get_tracklist('audio')) end    
     ne.eventresponder['shift+mbtn_left_down'] =
         function () show_message(get_tracklist('audio')) end
-    ne.eventresponder["wheel_down_press"] =
-        function () set_track("audio", 1) end
-    ne.eventresponder["wheel_up_press"] =
-        function () set_track("audio", -1) end
+    ne.eventresponder["wheel_down_press"] = function () 
+        set_track("audio", 1)
+        show_message(get_tracklist('audio')) end
+    ne.eventresponder["wheel_up_press"] = function () 
+        set_track("audio", -1)
+        show_message(get_tracklist('audio')) end
 	
     --cy_sub
     ne = new_element('cy_sub', 'button')
@@ -1675,16 +1704,20 @@ function osc_init()
         end
         return msg
     end
-    ne.eventresponder['mbtn_left_up'] =
-        function () set_track('sub', 1) end
-    ne.eventresponder['mbtn_right_up'] =
-        function () set_track('sub', -1) end
+    ne.eventresponder['mbtn_left_up'] = function ()
+        set_track('sub', 1) 
+        show_message(get_tracklist('sub')) end
+    ne.eventresponder['mbtn_right_up'] = function ()
+        set_track('sub', -1)
+        show_message(get_tracklist('sub')) end
     ne.eventresponder['shift+mbtn_left_down'] =
         function () show_message(get_tracklist('sub')) end
-    ne.eventresponder["wheel_down_press"] =
-        function () set_track("sub", 1) end
-    ne.eventresponder["wheel_up_press"] =
-        function () set_track("sub", -1) end
+    ne.eventresponder["wheel_down_press"] = function ()
+        set_track("sub", 1)
+        show_message(get_tracklist('sub')) end
+    ne.eventresponder["wheel_up_press"] = function ()
+        set_track("sub", -1)
+        show_message(get_tracklist('sub')) end
 	
     -- vol_ctrl
     ne = new_element('vol_ctrl', 'button')
@@ -1786,9 +1819,9 @@ function osc_init()
 					end
 				end
 				if ch == 0 then
-					return string.format('[%s] [0/%d]', mp.format_time(possec), #chapters)
+					return string.format('%s 0/%d', mp.format_time(possec), #chapters)
 				elseif chapters[ch].title then 
-					return string.format('[%s] [%d/%d][%s]', mp.format_time(possec), ch, #chapters, chapters[ch].title)
+					return string.format('%s - %s', mp.format_time(possec), chapters[ch].title)
 				end
 			end
             return mp.format_time(possec)
@@ -2580,7 +2613,7 @@ function visibility_mode(mode, no_osd)
     end
     
     user_opts.visibility = mode
-    utils.shared_script_property_set("osc-visibility", mode)
+    mp.set_property_native("osc-visibility", mode)
     
     if not no_osd and tonumber(mp.get_property('osd-level')) >= 1 then
         mp.osd_message('OSC visibility: ' .. mode)
@@ -2610,7 +2643,7 @@ function idlescreen_visibility(mode, no_osd)
         user_opts.idlescreen = false
     end
 
-    utils.shared_script_property_set("osc-idlescreen", mode)
+    mp.set_property_native("osc-idlescreen", mode)
 
     if not no_osd and tonumber(mp.get_property("osd-level")) >= 1 then
         mp.osd_message("OSC logo visibility: " .. tostring(mode))
