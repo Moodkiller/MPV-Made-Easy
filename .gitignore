@@ -12,8 +12,6 @@ log.txt
 *.txt
 *.new
 mpv/fonts.conf
-*.ttf
-*.otf
 mpv/mpv.conf.kokomins
 MPV-Made-Easy-Theater-Mode.lnk
 mpv/mpv.conf.MK
