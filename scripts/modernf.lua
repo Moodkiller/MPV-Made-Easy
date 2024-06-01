@@ -19,7 +19,7 @@ local user_opts = {
     scalefullscreen = 1,        -- scaling of the controller when fullscreen
     scaleforcedwindow = 2,      -- scaling when rendered on a forced window
     vidscale = false,           -- scale the controller with the video?
-    hidetimeout = 500,         -- duration in ms until the OSC hides if no
+    hidetimeout = 500,          -- duration in ms until the OSC hides if no
                                 -- mouse movement. enforced non-negative for the
                                 -- user, but internally negative is 'always-on'.
     fadeduration = 200,         -- duration of fade out in ms, 0 = no fade
@@ -28,29 +28,30 @@ local user_opts = {
     iamaprogrammer = false,     -- use native mpv values and disable OSC
                                 -- internal track list management (and some
                                 -- functions that depend on it)
-    layout = "reduced",	--original/reduced
-    font = 'mpv-osd-symbols',    -- default osc font
-    seekrange = true,            -- show seekrange overlay
-    seekrangealpha = 128,          -- transparency of seekranges
+    layout = "original",	    -- reduced/original/mid
+    font = 'mpv-osd-symbols',   -- default osc font
+    seekrange = true,           -- show seekrange overlay
+    seekrangealpha = 128,       -- transparency of seekranges
     seekbarkeyframes = true,    -- use keyframes when dragging the seekbar
-    title = '${media-title}',   -- string compatible with property-expansion
-                                -- to be shown as OSC title
-    showonpause = true,            -- show title and no hide timeout on pause
-    timetotal = false,              -- display total time instead of remaining time?
+    title_original = '${filename} • ${file-size} • Video: ${video-params/w}x${video-params/h}/${video-params/pixelformat}bit • Audio: ${audio-params/format}/${audio-params/channels} • Playlist: ${playlist-pos-1}/${playlist-count}',  -- string compatible with property-expansion
+    title_reduced = '${media-title} • ${file-size} • ${video-params/w}',
+    title_mid = '${media-title}',
+    showonpause = true,         -- show title and no hide timeout on pause
+    timetotal = false,          -- display total time instead of remaining time?
     timems = false,             -- display timecodes with milliseconds
     visibility = 'auto',        -- only used at init to set visibility_mode(...)
     windowcontrols = 'auto',    -- whether to show window controls
     volumecontrol = true,       -- whether to show mute button and volumne slider
     processvolume = false,		-- volue slider show processd volume
-    language = 'eng',            -- eng=English, chs=Chinese
-    boxalpha = 180,
-    deadzone = 4028              -- area of mouse movement for osc showhide,pixel from bottom to top
+    language = 'eng',           -- eng=English, chs=Chinese
+    boxalpha = 180,             -- transparency of seekbar area (0-255), 0 (opaque) to 255 (fully transparent)
+    deadzone = 4028             -- area of mouse movement for osc showhide,pixel from bottom to top
 }
 
 -- Localization
 local language = {
     ['eng'] = {
-        welcome = 'Drop files or URLs to play here.',  -- this text appears when mpv starts
+        welcome = '{\\fs48}Drop files or URLs to play. Press "CTRL + o" to browse to a file.',  -- this text appears when mpv starts
         off = 'OFF',
         na = 'n/a',
         none = 'none',
@@ -1260,14 +1261,14 @@ layouts["original"] = function ()
     --
     new_element('seekbarbg', 'box')
     lo = add_layout('seekbarbg')
-    lo.geometry = {x = osc_geo.w / 2 , y = refY - 96 , an = 5, w = osc_geo.w - 50, h = 2}
+    lo.geometry = {x = osc_geo.w / 2 , y = refY - 96 , an = 5, w = osc_geo.w - 50, h = 5}
     lo.layer = 13
     lo.style = osc_styles.SeekbarBg
     lo.alpha[1] = 128
     lo.alpha[3] = 128
 
     lo = add_layout('seekbar')
-    lo.geometry = {x = osc_geo.w / 2 , y = refY - 96 , an = 5, w = osc_geo.w - 50, h = 16}
+    lo.geometry = {x = osc_geo.w / 2 , y = refY - 96 , an = 5, w = osc_geo.w - 50, h = 20}
     lo.style = osc_styles.SeekbarFg
     lo.slider.gap = 7
     lo.slider.tooltip_style = osc_styles.Tooltip
@@ -1349,12 +1350,11 @@ layouts["original"] = function ()
     lo.visible = (osc_param.playresx >= 600)
     
     geo = { x = 25, y = refY - 132, an = 1, w = osc_geo.w - 50, h = 48 }
-    lo = add_layout('title')
+    lo = add_layout('title_original')
     lo.geometry = geo
-    lo.style = string.format('%s{\\clip(%f,%f,%f,%f)}', osc_styles.Title,
-                                geo.x, geo.y - geo.h, geo.x + geo.w , geo.y)
+    lo.style = string.format(osc_styles.Title, geo.x, geo.y - geo.h, geo.x + geo.w , geo.y)
     lo.alpha[3] = 0
-    lo.button.maxchars = geo.w / 23
+    lo.button.maxchars = geo.w - 25
 end
 
 -- Validate string type user options
@@ -1771,17 +1771,31 @@ function osc_init()
         function () mp.commandv('script-binding', 'stats/display-stats-toggle') end
     ne.eventresponder['mbtn_right_up'] =
         function () mp.commandv('script-binding', 'stats/display-page-4') end
+
     -- title
-    ne = new_element('title', 'button')
+    -- ne = new_element('title', 'button')
+    -- ne.content = function ()
+        -- local title = mp.command_native({'expand-text', user_opts.title})
+        -- if state.paused then
+            -- title = title:gsub('\\n', ' '):gsub('\\$', ''):gsub('{','\\{')
+        -- else
+            -- title = ' '
+        -- end
+        -- return not (title == '') and title or ' '
+    -- end
+    -- ne.visible = osc_param.playresx >= 700 --and user_opts.showonpause
+
+	-- title_original
+    ne = new_element('title_original', 'button')
     ne.content = function ()
-        local title = mp.command_native({'expand-text', user_opts.title})
+        local title_original = mp.command_native({'expand-text', user_opts.title_original})
         if state.paused then
-            title = title:gsub('\\n', ' '):gsub('\\$', ''):gsub('{','\\{')
+            title_original = title_original:gsub('\\n', ' '):gsub('\\$', ''):gsub('{','\\{')
         else
-            title = ' '
+            title_original = ' '
         end
-        return not (title == '') and title or ' '
-    end
+        return not (title_original == '') and title_original or ' '
+    end	
     ne.visible = osc_param.playresx >= 700 --and user_opts.showonpause
     
     --seekbar
