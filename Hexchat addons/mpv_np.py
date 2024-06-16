@@ -1,19 +1,20 @@
-# requires Python 3
+# requires Python 3 or later
 from abc import ABCMeta, abstractmethod
 import json
 import os.path
 import socket
 import sys
 import time
-
 import hexchat
 
 
 __module_name__ = "mpv now playing (MK Mod)"
-__module_version__ = "0.4.5"
+__module_version__ = "0.4.6"
 __module_description__ = "Announces info of the currently loaded 'file' in mpv"
 
-# # Configuration Part 1, Part 2 is at the end of this script  # # # # # # # # # # # # # # # # # # #
+###############################################################################
+# # Configuration Part 1
+###############################################################################
 
 # Paths to mpv's IPC socket or named pipe.
 # Set the same path in your mpv.conf `input-ipc-server` setting
@@ -21,21 +22,22 @@ __module_description__ = "Announces info of the currently loaded 'file' in mpv"
 WIN_PIPE_PATH = R"\\.\pipe\mpvsocket"
 UNIX_PIPE_PATH = "/tmp/mpv-socket"  # variables are expanded
 
-# # The Script # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# The command that is being executed.
+# Supports mpv's property expansion:
+# https://mpv.io/manual/stable/#property-expansion
 
+# Video Command
+CMD_FMT_VIDEO = "me is watching: \x0311\x02${filename}\x0F • ${file-size} • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F"
 
-def _tempfile_path(*args, **kwargs):
-    """Generate a sure-to-be-free tempfile path.
+# Audio Command
+CMD_FMT_AUDIO = "me is listening to: \x0311\x02${metadata/artist}\x0F - \x0311\x02${media-title}\x0F (${file-size} • ${audio-bitrate} • ${audio-params/channel-count}ch) • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F"
 
-    It's hacky but it works.
-    """
-    import tempfile
-    fd, tmpfile = tempfile.mkstemp()
-    # close and delete; we only want the path
-    os.close(fd)
-    os.remove(tmpfile)
-    return tmpfile
+# Stream Command 
+# To sytle this output, CTRL+F "CMD_FMT_STREAM" and adjust it there
 
+###############################################################################
+# # The Script
+###############################################################################
 
 # If asynchronous IO was to be added,
 # the Win32API would need to be used on Windows.
@@ -110,16 +112,6 @@ class MpvIpcClient(metaclass=ABCMeta):
     def __exit__(self, *_):
         self.close()
 
-    @abstractmethod
-    def expand_properties(self, fmt):
-        """Expand a mpv property string using its run command and platform-specific hacks.
-
-        Pending https://github.com/mpv-player/mpv/issues/3166
-        for easier implementation.
-        """
-        pass
-
-
 class WinMpvIpcClient(MpvIpcClient):
 
     def _connect(self):
@@ -135,56 +127,6 @@ class WinMpvIpcClient(MpvIpcClient):
 
     def close(self):
         self._f.close()
-
-    def expand_properties(self, fmt, timeout=5):
-        """Expand a mpv property string using its run command and other hacks.
-
-        Notably, spawn a Powershell process that writes a string to some file.
-        Because of this, there are restrictions on the property string
-        that will most likely *not* be met,
-        but are checked for anyway.
-
-        Since this is a polling-based approach (and unsafe too),
-        a timeout mechanic is implemented
-        and the wait time can be specified.
-        """
-        if "'" in fmt or "\\n" in fmt:
-            raise ValueError("unsupported format string - may not contain `\\n` or `'`")
-
-        tmpfile = _tempfile_path()
-
-        # backslashes in quotes need to be escaped for mpv
-        self.input_command(R'''run powershell.exe -Command "'{fmt}' | Out-File '{tmpfile}'"'''
-                           .format(fmt=fmt, tmpfile=tmpfile.replace("\\", "\\\\")))
-
-        # some tests reveal an average time requirement of 0.35s
-        start_time = time.time()
-        end_time = start_time + timeout
-        while time.time() < end_time:
-            if not os.path.exists(tmpfile):
-                continue
-            try:
-                with open(tmpfile, 'r', encoding='utf-16 le') as f:  # Powershell writes utf-16 le
-                    # Because we open the file faster than powershell writes to it,
-                    # wait until there is a newline in out tmpfile (which powershell writes).
-                    # This means we can't support newlines in the fmt string,
-                    # but who needs those anyway?
-                    buffer = ''
-                    while time.time() < end_time:
-                        result = f.read()
-                        buffer += result
-                        if "\n" in result:
-                            # strip BOM and next line
-                            buffer = buffer.lstrip("\ufeff").splitlines()[0]
-                            return buffer
-                        buffer += result
-            except OSError:
-                continue
-            else:
-                break
-            finally:
-                os.remove(tmpfile)
-
 
 class UnixMpvIpcClient(MpvIpcClient):
 
@@ -209,13 +151,6 @@ class UnixMpvIpcClient(MpvIpcClient):
     def close(self):
         self._sock.close()
 
-    def expand_properties(self, fmt):
-        return NotImplemented
-
-
-###############################################################################
-# # Configuration Part 2
-###############################################################################
 
 # convert MiB to MB for example and remove the space: i.e 35 MiB -> 37MB
 def prettiBytesSize(num, suffix='B'):
@@ -233,63 +168,89 @@ def prettiBytesRate(num, suffix='s'):
         num /= 1000.0
     return '%.1f%s%s' % (num, 'Yi', suffix)
 	
-# Windows only:
-# The command that is being executed.
-# Supports mpv's property expansion:
-# https://mpv.io/manual/stable/#property-expansion
-# https://mpv.io/manual/master/#property-list
 
+###############################################################################
+# # Configuration Part 2
+############################################################################### 
+
+# HexChat message formating reference
 # \x02 	bold
 # \x03 	colored text
 # \x1D 	italic text
 # \x1F 	underlined text
 # \x16 	swap background and foreground colors ("reverse video")
 # \x0F 	reset all formatting
-	
+
+# Windows only:
+# The command that is being executed.
+# Supports mpv's property expansion:
+# https://mpv.io/manual/stable/#property-expansion
+# https://mpv.io/manual/master/#property-list
+
 ######## Set the format/properties for audio files ###############
-audioformats = ("flac", "acc", "mp3", "ac3", "m4a", "opus", "wav", "wma", "webm", "floatp")
-	
+audioformats = ("flac", "aac", "mp3", "ac3", "m4a", "opus", "wav", "wma", "webm", "floatp")
+
+#def is_audio_playing(mpv):
+    # Check if audio is playing by looking at audio bitrate
+    #audio_bitrate = mpv.command("get_property", "audio-bitrate")
+    #return audio_bitrate and audio_bitrate != "0"
+    #print("\x0308[DEBUG] audio_bitrate (T/F):",audio_bitrate)
+
 def mpv_np(caller, callee, helper):
     try:
         with MpvIpcClient.for_platform() as mpv:
             try:
                 size = mpv.command("get_property", "file-size")
+                BitRate = mpv.command("get_property", "audio-bitrate")
             except RuntimeError as e:
                 error_message = e.args[1]  # Extract the error message from the exception
                 if "property unavailable" in error_message:
                     size = None
+                    BitRate = None
                 else:
                     raise
 
-            BitRate = mpv.command("get_property", "audio-bitrate")
+            # Initialize variables with default values
+            BitRate = "N/A"  # Default value for BitRate
+            filename = "N/A"  # Default value for filename
+            fileformat = "N/A"  # Default value for fileformat
+            filesize = "N/A"  # Default value for filesize
+
+            # Update variables with actual values if available
+            # BitRate = mpv.command("get_property", "audio-bitrate")
+            BitRate = BitRate
+            filename = mpv.command("get_property", "filename")
             fileformat = mpv.command("get_property", "file-format")
-            
+
             if fileformat in audioformats:
-                command = mpv.expand_properties("me is listening to \x0307\x02${metadata/artist}\x0F - \x0307\x02${media-title}\x0F {" + prettiBytesSize(size) + " • " + fileformat.upper() + " " + prettiBytesRate(BitRate) + " • ${audio-params/channel-count}ch} • [${time-pos}${!duration==0: / ${duration}}] playing in \x0306${mpv-version}\x0F")
-            if size is None:
-                size_str = ""  # Or any other string you prefer to represent "not available"
-                command = mpv.expand_properties("me is streaming: \x0307\x02${media-title}\x0F • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F")
+                # Audio is playing or it's an audio format
+                command = mpv.command('expand-text', CMD_FMT_AUDIO)
+            elif size is None:
+                # Unknown file format and size not available
+                size_str = ""  # Or any other string you prefer to represent "not available"			
+                uploader = mpv.command("get_property", "filtered-metadata").get('Uploader', None)
+                CMD_FMT_STREAM = "me is streaming: \x0311\x02${media-title}\x0F - \x0311\x02" + uploader + "\x0F • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F"	
+                command = mpv.command('expand-text', CMD_FMT_STREAM)
             else:
-                size_str = prettiBytesSize(size)
-                command = mpv.expand_properties("me is watching: \x0307\x02${media-title}\x0F • " + prettiBytesSize(size) + " • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F")
-                command = mpv.expand_properties("me is watching: \x0307\x02${filename}\x0F • " + prettiBytesSize(size) + " • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F")
+                # Likely a video
+                command = mpv.command('expand-text', CMD_FMT_VIDEO)
 
             if command is None:
                 print("Unable to expand property string - falling back to legacy")
                 command = NotImplemented
 
             if command is NotImplemented:
-                title = mpv.command("get_property", "media-title")
-                command = LEGACY_CMD_FMT.format(title=title)
+                title = mpv.command("get_property", "filename")
+                command = title
 
             hexchat.command(command)
 
     except OSError:
-        # import traceback; traceback.print_exc()
-        print("mpv IPC not running or bad configuration (see /help mpv)")
+        import traceback
+        traceback.print_exc()
+        print(__module_name__ + ":\x0308 mpv IPC not running or bad configuration (see /help mpv)")
 
     return hexchat.EAT_ALL
-
 
 
 if __name__ == '__main__':
