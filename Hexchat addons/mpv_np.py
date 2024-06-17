@@ -9,7 +9,7 @@ import hexchat
 
 
 __module_name__ = "mpv now playing (MK Mod)"
-__module_version__ = "0.4.6"
+__module_version__ = "0.4.7"
 __module_description__ = "Announces info of the currently loaded 'file' in mpv"
 
 ###############################################################################
@@ -27,10 +27,12 @@ UNIX_PIPE_PATH = "/tmp/mpv-socket"  # variables are expanded
 # https://mpv.io/manual/stable/#property-expansion
 
 # Video Command
-CMD_FMT_VIDEO = "me is watching: \x0311\x02${filename}\x0F • ${file-size} • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F"
+# To sytle this output, CTRL+F "CMD_FMT_VIDEO" and adjust it there
+# CMD_FMT_VIDEO = "me is watching: \x0311\x02${filename}\x0F • ${file-size} • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F"
 
 # Audio Command
-CMD_FMT_AUDIO = "me is listening to: \x0311\x02${metadata/artist}\x0F - \x0311\x02${media-title}\x0F (${file-size} • ${audio-bitrate} • ${audio-params/channel-count}ch) • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F"
+# To sytle this output, CTRL+F "CMD_FMT_AUDIO" and adjust it there
+# CMD_FMT_AUDIO = "me is listening to: \x0311\x02${metadata/artist}\x0F - \x0311\x02${media-title}\x0F (${file-size} • ${audio-bitrate} • ${audio-params/channel-count}ch) • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F"
 
 # Stream Command 
 # To sytle this output, CTRL+F "CMD_FMT_STREAM" and adjust it there
@@ -224,7 +226,10 @@ def mpv_np(caller, callee, helper):
 
             if fileformat in audioformats:
                 # Audio is playing or it's an audio format
+                size = prettiBytesSize(mpv.command("get_property", "file-size"))
+                CMD_FMT_AUDIO = "me is listening to: \x0311\x02${metadata/artist}\x0F - \x0311\x02${media-title}\x0F (" + size + " • ${audio-bitrate} • ${audio-params/channel-count}ch) • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F"
                 command = mpv.command('expand-text', CMD_FMT_AUDIO)
+                
             elif size is None:
                 # Unknown file format and size not available
                 size_str = ""  # Or any other string you prefer to represent "not available"			
@@ -233,7 +238,10 @@ def mpv_np(caller, callee, helper):
                 command = mpv.command('expand-text', CMD_FMT_STREAM)
             else:
                 # Likely a video
+                size = prettiBytesSize(mpv.command("get_property", "file-size"))
+                CMD_FMT_VIDEO = "me is watching: \x0311\x02${filename}\x0F • " + size + " • [${time-pos}${!duration==0: / ${duration}}] in \x0306${mpv-version}\x0F"
                 command = mpv.command('expand-text', CMD_FMT_VIDEO)
+                
 
             if command is None:
                 print("Unable to expand property string - falling back to legacy")
